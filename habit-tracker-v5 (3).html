@@ -1,0 +1,1118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Habit Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;600&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #0c0c0c;
+  --surface: #141414;
+  --surface2: #1a1a1a;
+  --border: #252525;
+  --border2: #333;
+  --accent: #c8b88a;
+  --accent2: #8ab4c8;
+  --green: #7db87d;
+  --red: #c87d7d;
+  --text: #e8e4d8;
+  --muted: #666;
+  --muted2: #444;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  min-height: 100vh;
+  padding: 20px 16px 60px;
+}
+
+/* ── TOP HEADER ── */
+.top-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 24px;
+  gap: 12px;
+}
+.app-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 38px;
+  letter-spacing: 5px;
+  color: var(--accent);
+  text-shadow: 0 0 30px rgba(200,184,138,0.25);
+}
+.header-right {
+  display: flex; align-items: center; gap: 10px;
+}
+.year-nav {
+  display: flex; align-items: center; gap: 4px;
+  border: 1px solid var(--border2);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.year-nav-btn {
+  background: none; border: none;
+  color: var(--muted); font-size: 13px;
+  padding: 6px 8px; cursor: pointer;
+  font-family: 'IBM Plex Mono', monospace;
+  transition: color 0.15s, background 0.15s;
+  line-height: 1;
+}
+.year-nav-btn:hover { color: var(--accent); background: rgba(200,184,138,0.08); }
+.year-badge {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 13px;
+  color: var(--muted);
+  letter-spacing: 2px;
+  padding: 6px 10px;
+  min-width: 44px;
+  text-align: center;
+}
+.save-indicator {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  color: var(--green);
+  letter-spacing: 1px;
+  opacity: 0;
+  transition: opacity 0.4s;
+}
+.save-indicator.show { opacity: 1; }
+
+/* ── HABITS MANAGER ── */
+.habits-manager {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px 16px;
+  margin-bottom: 20px;
+}
+.habits-manager-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 0;
+  cursor: pointer;
+  user-select: none;
+}
+.habits-manager-title {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: var(--muted);
+}
+.habits-manager-toggle {
+  font-size: 10px;
+  color: var(--muted);
+  transition: transform 0.2s;
+}
+.habits-manager-toggle.open { transform: rotate(90deg); }
+
+.habits-list {
+  display: none;
+  margin-top: 14px;
+  flex-direction: column;
+  gap: 6px;
+}
+.habits-list.open { display: flex; }
+
+.habit-item {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 8px 10px;
+  transition: background 0.15s, border-color 0.15s, opacity 0.15s;
+  cursor: default;
+}
+.habit-item.dragging {
+  opacity: 0.4;
+}
+.habit-item.drag-over {
+  border-color: var(--accent);
+  background: rgba(200,184,138,0.08);
+}
+.drag-handle {
+  color: var(--muted2);
+  font-size: 13px;
+  cursor: grab;
+  padding: 0 2px;
+  line-height: 1;
+  user-select: none;
+  flex-shrink: 0;
+}
+.drag-handle:active { cursor: grabbing; }
+.habit-item-emoji { font-size: 14px; min-width: 22px; text-align: center; }
+.habit-item-name {
+  flex: 1;
+  font-size: 12px;
+  color: var(--text);
+}
+/* Edit mode inputs inside habit item */
+.habit-edit-emoji {
+  width: 36px;
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: 4px;
+  color: var(--text);
+  font-size: 14px;
+  text-align: center;
+  padding: 3px 2px;
+  outline: none;
+  flex-shrink: 0;
+}
+.habit-edit-name {
+  flex: 1;
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: 4px;
+  color: var(--text);
+  font-size: 12px;
+  padding: 4px 8px;
+  outline: none;
+  font-family: 'DM Sans', sans-serif;
+}
+.habit-edit-emoji:focus, .habit-edit-name:focus { border-color: var(--accent); }
+.habit-action-btn {
+  background: none; border: none;
+  font-size: 13px; cursor: pointer;
+  padding: 2px 4px; border-radius: 3px;
+  transition: color 0.15s;
+  line-height: 1;
+  flex-shrink: 0;
+}
+.habit-edit-btn { color: var(--muted2); }
+.habit-edit-btn:hover { color: var(--accent2); }
+.habit-save-btn { color: var(--green); }
+.habit-save-btn:hover { color: var(--green); opacity: 0.8; }
+.habit-cancel-btn { color: var(--muted2); }
+.habit-cancel-btn:hover { color: var(--muted); }
+.habit-del-btn {
+  background: none; border: none;
+  color: var(--muted2); font-size: 14px; cursor: pointer;
+  padding: 2px 4px; border-radius: 3px;
+  transition: color 0.15s;
+  line-height: 1;
+  flex-shrink: 0;
+}
+.habit-del-btn:hover { color: var(--red); }
+
+.add-habit-row {
+  display: flex; gap: 6px; margin-top: 8px;
+}
+.add-habit-emoji {
+  width: 44px;
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: 6px;
+  color: var(--text);
+  font-size: 16px;
+  text-align: center;
+  padding: 6px 4px;
+  outline: none;
+}
+.add-habit-input {
+  flex: 1;
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: 6px;
+  color: var(--text);
+  font-size: 12px;
+  padding: 6px 10px;
+  outline: none;
+  font-family: 'DM Sans', sans-serif;
+}
+.add-habit-input::placeholder { color: var(--muted); }
+.add-habit-input:focus, .add-habit-emoji:focus { border-color: var(--accent); }
+.add-habit-btn {
+  background: var(--accent);
+  color: #0c0c0c;
+  border: none;
+  border-radius: 6px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 6px 14px;
+  cursor: pointer;
+  letter-spacing: 1px;
+  transition: opacity 0.15s;
+}
+.add-habit-btn:hover { opacity: 0.85; }
+
+/* ── MONTH PILLS ── */
+.months-row {
+  display: flex; flex-wrap: wrap; gap: 8px;
+  margin-bottom: 24px;
+}
+.month-pill {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 1.5px;
+  padding: 8px 14px;
+  border-radius: 6px;
+  border: 1px solid var(--border2);
+  background: var(--surface);
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+  position: relative;
+}
+.month-pill:hover { border-color: var(--accent); color: var(--accent); }
+.month-pill.active {
+  background: var(--accent);
+  color: #0c0c0c;
+  border-color: var(--accent);
+  font-weight: 600;
+  box-shadow: 0 0 16px rgba(200,184,138,0.3);
+}
+.month-pill.has-data::after {
+  content: '';
+  position: absolute;
+  bottom: 4px; right: 4px;
+  width: 4px; height: 4px;
+  border-radius: 50%;
+  background: var(--accent2);
+}
+.month-pill.active.has-data::after { background: #0c0c0c; }
+
+/* ── CALENDAR PANEL ── */
+.calendar-panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 20px;
+  animation: slideDown 0.3s ease;
+}
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.cal-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface2);
+}
+.cal-month-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 24px;
+  letter-spacing: 4px;
+  color: var(--accent);
+}
+.cal-stats {
+  display: flex; gap: 16px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+}
+.cal-stat { color: var(--muted); }
+.cal-stat span { color: var(--text); font-weight: 600; }
+
+/* DOW header */
+.cal-dow {
+  display: grid; grid-template-columns: repeat(7, 1fr);
+  border-bottom: 1px solid var(--border);
+}
+.cal-dow div {
+  text-align: center;
+  padding: 10px 0;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 1px;
+  color: var(--muted);
+}
+.cal-dow div:first-child, .cal-dow div:last-child { color: var(--accent2); }
+
+/* Calendar grid of weeks */
+.cal-weeks { }
+.cal-week {
+  display: grid; grid-template-columns: 36px repeat(7, 1fr);
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  transition: background 0.15s;
+  position: relative;
+}
+.cal-week:last-child { border-bottom: none; }
+.cal-week:hover { background: rgba(200,184,138,0.05); }
+.cal-week.active-week { background: rgba(200,184,138,0.08); }
+
+.week-num {
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px;
+  color: var(--muted2);
+  border-right: 1px solid var(--border);
+  padding: 10px 0;
+}
+.cal-week.active-week .week-num {
+  color: var(--accent);
+  background: rgba(200,184,138,0.1);
+}
+
+.cal-day {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: 8px 4px;
+  min-height: 52px;
+  position: relative;
+  gap: 4px;
+}
+.cal-day.empty { opacity: 0; pointer-events: none; }
+.cal-day.today .day-num {
+  background: var(--accent);
+  color: #0c0c0c;
+  border-radius: 50%;
+}
+.day-num {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text);
+  width: 26px; height: 26px;
+  display: flex; align-items: center; justify-content: center;
+}
+.day-dots {
+  display: flex; gap: 2px; flex-wrap: wrap; justify-content: center;
+  max-width: 36px;
+}
+.day-dot {
+  width: 4px; height: 4px; border-radius: 50%;
+  background: var(--green);
+}
+.day-dot.miss { background: var(--muted2); }
+.cal-day.future .day-num { color: var(--muted2); }
+.cal-day.future .day-dots { opacity: 0.3; }
+
+/* Week expand arrow */
+.week-arrow {
+  position: absolute;
+  right: 8px; top: 50%; transform: translateY(-50%);
+  font-size: 10px;
+  color: var(--muted);
+  transition: transform 0.2s, color 0.2s;
+}
+.cal-week.active-week .week-arrow {
+  transform: translateY(-50%) rotate(90deg);
+  color: var(--accent);
+}
+
+/* ── WEEK DETAIL PANEL ── */
+.week-detail {
+  border-top: 1px solid var(--border);
+  background: var(--bg);
+  animation: slideDown 0.25s ease;
+  overflow: hidden;
+}
+.week-detail-header {
+  padding: 14px 20px 10px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.week-detail-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 18px;
+  letter-spacing: 3px;
+  color: var(--accent2);
+}
+.week-completion {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  color: var(--muted);
+}
+.week-completion span { color: var(--green); }
+
+/* Habit rows in week detail */
+.habit-week-grid {
+  padding: 0 20px 16px;
+  overflow-x: auto;
+}
+.habit-week-table { width: 100%; border-collapse: collapse; min-width: 400px; }
+.hwt-head th {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 1px;
+  color: var(--muted);
+  padding: 4px 8px;
+  text-align: center;
+  border-bottom: 1px solid var(--border);
+}
+.hwt-head th.habit-h { text-align: left; min-width: 140px; }
+.hwt-body tr { border-bottom: 1px solid var(--border); }
+.hwt-body tr:last-child { border-bottom: none; }
+.hwt-body tr:hover { background: rgba(255,255,255,0.02); }
+.hwt-body td {
+  padding: 8px;
+  text-align: center;
+  font-size: 12px;
+}
+.hwt-body td.habit-n {
+  text-align: left;
+  color: var(--text);
+  font-size: 12px;
+  white-space: nowrap;
+}
+.hwt-body td.pct-cell {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  color: var(--accent);
+  border-left: 1px solid var(--border);
+}
+
+/* Checkbox — bigger for mobile */
+.cb {
+  width: 30px; height: 30px;
+  border: 1.5px solid var(--border2);
+  border-radius: 5px;
+  margin: 0 auto;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s ease;
+  background: transparent;
+  font-size: 15px;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.cb.checked {
+  background: var(--green);
+  border-color: var(--green);
+  box-shadow: 0 0 8px rgba(125,184,125,0.35);
+}
+.cb.future { border-color: var(--border); cursor: default; opacity: 0.3; }
+
+/* ── STATS STRIP (below calendar) ── */
+.stats-strip {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin-bottom: 20px;
+}
+.scard {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px;
+  text-align: center;
+}
+.scard-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 2px;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+.scard-val {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 30px;
+  color: var(--text);
+}
+.scard-val.g { color: var(--green); }
+.scard-val.a { color: var(--accent); }
+.scard-val.r { color: var(--red); }
+
+/* ── ANALYSIS BAR ── */
+.analysis-section {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 18px 20px;
+}
+.section-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 20px;
+  letter-spacing: 3px;
+  color: var(--accent);
+  margin-bottom: 14px;
+}
+.analysis-row {
+  display: grid;
+  grid-template-columns: 140px 30px 1fr 40px;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 9px;
+  font-size: 11px;
+}
+.ar-name { color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 12px; }
+.ar-pct-num { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--muted); text-align: center; }
+.ar-bar { background: var(--border2); border-radius: 3px; height: 8px; overflow: hidden; }
+.ar-fill { height: 100%; border-radius: 3px; background: linear-gradient(90deg, var(--accent2), var(--accent)); transition: width 0.6s ease; }
+.ar-pct { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--accent); text-align: right; }
+
+/* scrollbar */
+::-webkit-scrollbar { width: 3px; height: 3px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
+</style>
+</head>
+<body>
+
+<div class="top-header">
+  <div class="app-title">HABIT TRACKER</div>
+  <div class="header-right">
+    <div class="save-indicator" id="save-indicator">SAVED ✓</div>
+    <div class="year-nav">
+      <button class="year-nav-btn" onclick="changeYear(-1)">&#8249;</button>
+      <div class="year-badge" id="year-badge">2026</div>
+      <button class="year-nav-btn" onclick="changeYear(1)">&#8250;</button>
+    </div>
+  </div>
+</div>
+
+<!-- Habits manager (collapsible) -->
+<div class="habits-manager">
+  <div class="habits-manager-header" onclick="toggleHabitsManager()">
+    <div class="habits-manager-title">MANAGE HABITS</div>
+    <div class="habits-manager-toggle open" id="hm-toggle">▶</div>
+  </div>
+  <div class="habits-list open" id="habits-list"></div>
+</div>
+
+<div class="months-row" id="months-row"></div>
+<div id="calendar-area"></div>
+
+<div class="stats-strip" id="stats-strip" style="display:none"></div>
+<div id="analysis-area"></div>
+
+<script>
+// ── CONSTANTS ──
+const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const DOW    = ["Su","Mo","Tu","We","Th","Fr","Sa"];
+const TODAY  = new Date(); TODAY.setHours(0,0,0,0);
+const LS_KEY = 'habitTrackerUnli';
+
+// ── DEFAULT HABITS ──
+const DEFAULT_HABITS = [
+  { name: "Wake up by 7AM",      emoji: "⏰" },
+  { name: "Eat 3 full meals",    emoji: "🍳" },
+  { name: "Protein intake",      emoji: "🥩" },
+  { name: "Drink 2L water",      emoji: "💧" },
+  { name: "Workout / gym",       emoji: "💪" },
+  { name: "Walk 5000+ steps",    emoji: "🚶" },
+  { name: "Study 3+ hours",      emoji: "📚" },
+  { name: "No class skipping",   emoji: "🏫" },
+  { name: "Review notes",        emoji: "📖" },
+  { name: "Limit screen time",   emoji: "📵" },
+  { name: "No junk food",        emoji: "🚫" },
+  { name: "Sleep 7-8 hours",     emoji: "🌙" },
+];
+
+// ── LOAD / SAVE ──
+function loadState() {
+  try {
+    const raw = localStorage.getItem(LS_KEY);
+    if (!raw) return null;
+    return JSON.parse(raw);
+  } catch(e) { return null; }
+}
+
+function saveState() {
+  try {
+    localStorage.setItem(LS_KEY, JSON.stringify({ habits: HABITS, checks }));
+    flashSaved();
+  } catch(e) {}
+}
+
+let _saveTimer = null;
+function scheduleSave() {
+  clearTimeout(_saveTimer);
+  _saveTimer = setTimeout(saveState, 300);
+}
+
+function flashSaved() {
+  const el = document.getElementById('save-indicator');
+  el.classList.add('show');
+  clearTimeout(el._t);
+  el._t = setTimeout(() => el.classList.remove('show'), 1800);
+}
+
+// ── INIT STATE FROM LOCALSTORAGE ──
+const saved = loadState();
+const HABITS = saved ? saved.habits : DEFAULT_HABITS.map(h => ({...h}));
+// checks['YYYY-M'][habitIdx][day] = true/false
+const checks = saved ? saved.checks : {};
+
+// ── HELPERS ──
+function daysInMonth(m, y) { return new Date(y !== undefined ? y : activeYear, m + 1, 0).getDate(); }
+
+function seedMonth(m) {
+  const k = yearKey(m);
+  if (checks[k]) return;
+  checks[k] = {};
+  const days = daysInMonth(m);
+  HABITS.forEach((_, hi) => {
+    checks[k][hi] = {};
+    for (let d = 1; d <= days; d++) checks[k][hi][d] = false;
+  });
+}
+
+// Ensure any newly added habit has entries for all already-seeded months
+function seedHabitForAllMonths(hi) {
+  for (const k in checks) {
+    const m = parseInt(k.split('-')[1]);
+    if (!checks[k][hi]) {
+      checks[k][hi] = {};
+      const y = parseInt(k.split('-')[0]);
+      const days = daysInMonth(m, y);
+      for (let d = 1; d <= days; d++) checks[k][hi][d] = false;
+    }
+  }
+}
+
+// ── STATE ──
+let activeYear  = TODAY.getFullYear();
+let activeMonth = null;
+let activeWeek  = null;
+let habitsOpen  = true;
+
+function changeYear(delta) {
+  activeYear += delta;
+  activeMonth = null;
+  activeWeek  = null;
+  document.getElementById('year-badge').textContent = activeYear;
+  renderAll();
+}
+
+function yearKey(m) { return activeYear + '-' + m; }
+
+// ── HABITS MANAGER ──
+function toggleHabitsManager() {
+  habitsOpen = !habitsOpen;
+  document.getElementById('habits-list').classList.toggle('open', habitsOpen);
+  document.getElementById('hm-toggle').classList.toggle('open', habitsOpen);
+}
+
+function renderHabitsManager() {
+  const list = document.getElementById('habits-list');
+  list.innerHTML = HABITS.map((h, hi) => `
+    <div class="habit-item" id="habit-item-${hi}"
+      draggable="true"
+      ondragstart="onDragStart(event,${hi})"
+      ondragover="onDragOver(event,${hi})"
+      ondragleave="onDragLeave(event,${hi})"
+      ondrop="onDrop(event,${hi})"
+      ondragend="onDragEnd(event)">
+      <span class="drag-handle" title="Drag to reorder">&#8942;</span>
+      <div class="habit-item-emoji">${h.emoji}</div>
+      <div class="habit-item-name">${h.name}</div>
+      <button class="habit-action-btn habit-edit-btn" onclick="startEditHabit(${hi})" title="Edit habit">&#9998;</button>
+      <button class="habit-del-btn" onclick="deleteHabit(${hi})" title="Remove habit">&#10005;</button>
+    </div>
+  `).join('') + `
+  <div class="add-habit-row">
+    <input class="add-habit-emoji" id="new-emoji" maxlength="2" placeholder="&#127775;" value="">
+    <input class="add-habit-input" id="new-name" placeholder="New habit name..." onkeydown="if(event.key==='Enter')addHabit()">
+    <button class="add-habit-btn" onclick="addHabit()">+ ADD</button>
+  </div>`;
+}
+
+// EDIT HABIT INLINE
+function startEditHabit(hi) {
+  const item = document.getElementById('habit-item-' + hi);
+  if (!item) return;
+  const h = HABITS[hi];
+  item.innerHTML =
+    '<span class="drag-handle">&#8942;</span>' +
+    '<input class="habit-edit-emoji" id="edit-emoji-' + hi + '" maxlength="2" value="' + h.emoji + '">' +
+    '<input class="habit-edit-name" id="edit-name-' + hi + '" value="' + h.name.replace(/"/g,'&quot;') + '" ' +
+      'onkeydown="if(event.key===\'Enter\')saveEditHabit(' + hi + '); if(event.key===\'Escape\')renderHabitsManager();">' +
+    '<button class="habit-action-btn habit-save-btn" onclick="saveEditHabit(' + hi + ')" title="Save">&#10003;</button>' +
+    '<button class="habit-action-btn habit-cancel-btn" onclick="renderHabitsManager()" title="Cancel">&#10005;</button>';
+  document.getElementById('edit-name-' + hi).focus();
+}
+
+function saveEditHabit(hi) {
+  const nameEl  = document.getElementById('edit-name-' + hi);
+  const emojiEl = document.getElementById('edit-emoji-' + hi);
+  const name  = nameEl.value.trim();
+  const emoji = emojiEl.value.trim() || '&#11088;';
+  if (!name) { nameEl.focus(); return; }
+  HABITS[hi].name  = name;
+  HABITS[hi].emoji = emoji;
+  renderHabitsManager();
+  renderAll();
+  scheduleSave();
+}
+
+// DRAG AND DROP REORDER
+var _dragSrc = null;
+
+function onDragStart(e, hi) {
+  _dragSrc = hi;
+  e.dataTransfer.effectAllowed = 'move';
+  setTimeout(function() {
+    var item = document.getElementById('habit-item-' + hi);
+    if (item) item.classList.add('dragging');
+  }, 0);
+}
+
+function onDragOver(e, hi) {
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'move';
+  if (hi === _dragSrc) return;
+  var item = document.getElementById('habit-item-' + hi);
+  if (item) item.classList.add('drag-over');
+}
+
+function onDragLeave(e, hi) {
+  var item = document.getElementById('habit-item-' + hi);
+  if (item) item.classList.remove('drag-over');
+}
+
+function onDrop(e, hi) {
+  e.preventDefault();
+  if (_dragSrc === null || _dragSrc === hi) return;
+  var from = _dragSrc;
+  // Reorder HABITS array
+  var moved = HABITS.splice(from, 1)[0];
+  HABITS.splice(hi, 0, moved);
+  // Reorder checks for every seeded month
+  for (var m in checks) {
+    var len = HABITS.length;
+    var ordered = [];
+    for (var i = 0; i <= len; i++) ordered.push(checks[m][i]);
+    var movedData = ordered.splice(from, 1)[0];
+    ordered.splice(hi, 0, movedData);
+    var newMonth = {};
+    ordered.forEach(function(data, newIdx) { if (data !== undefined) newMonth[newIdx] = data; });
+    checks[m] = newMonth;
+  }
+  _dragSrc = null;
+  renderHabitsManager();
+  renderAll();
+  scheduleSave();
+}
+
+function onDragEnd(e) {
+  _dragSrc = null;
+  document.querySelectorAll('.habit-item').forEach(function(el) {
+    el.classList.remove('dragging', 'drag-over');
+  });
+}
+
+function addHabit() {
+  const nameEl  = document.getElementById('new-name');
+  const emojiEl = document.getElementById('new-emoji');
+  const name  = nameEl.value.trim();
+  const emoji = emojiEl.value.trim() || '⭐';
+  if (!name) { nameEl.focus(); return; }
+  HABITS.push({ name, emoji });
+  const hi = HABITS.length - 1;
+  seedHabitForAllMonths(hi);
+  nameEl.value = ''; emojiEl.value = '';
+  renderHabitsManager();
+  renderAll();
+  scheduleSave();
+}
+
+function deleteHabit(hi) {
+  if (HABITS.length <= 1) return; // keep at least 1
+  if (!confirm(`Remove "${HABITS[hi].name}"? This will delete all its tracked data.`)) return;
+  HABITS.splice(hi, 1);
+  // Remap checks: remove habit index hi and shift down
+  for (const m in checks) {
+    const newMonth = {};
+    for (const oldHi in checks[m]) {
+      const n = parseInt(oldHi);
+      if (n === hi) continue;
+      newMonth[n < hi ? n : n - 1] = checks[m][oldHi];
+    }
+    checks[m] = newMonth;
+  }
+  renderHabitsManager();
+  renderAll();
+  scheduleSave();
+}
+
+// ── MONTHS ROW ──
+function renderMonths() {
+  const row = document.getElementById('months-row');
+  row.innerHTML = '';
+  MONTHS.forEach((name, mi) => {
+    const hasData = !!checks[yearKey(mi)];
+    const pill = document.createElement('div');
+    pill.className = 'month-pill' + (mi === activeMonth ? ' active' : '') + (hasData ? ' has-data' : '');
+    pill.textContent = name;
+    pill.onclick = () => selectMonth(mi);
+    row.appendChild(pill);
+  });
+}
+
+function selectMonth(mi) {
+  if (activeMonth === mi) {
+    activeMonth = null; activeWeek = null;
+  } else {
+    activeMonth = mi; activeWeek = null;
+    seedMonth(mi);
+  }
+  renderAll();
+}
+
+// ── CALENDAR ──
+function getWeeksForMonth(m) {
+  const days = daysInMonth(m);
+  const firstDow = new Date(activeYear, m, 1).getDay();
+  const weeks = [];
+  let week = [];
+  for (let i = 0; i < firstDow; i++) week.push(null);
+  for (let d = 1; d <= days; d++) {
+    week.push(d);
+    if (week.length === 7) { weeks.push(week); week = []; }
+  }
+  if (week.length > 0) {
+    while (week.length < 7) week.push(null);
+    weeks.push(week);
+  }
+  return weeks;
+}
+
+function getDayCompletion(m, d) {
+  const k = yearKey(m);
+  if (!checks[k]) return 0;
+  let done = 0;
+  HABITS.forEach((_, hi) => { if (checks[k][hi] && checks[k][hi][d]) done++; });
+  return done;
+}
+
+function passedDays(m) {
+  const days = daysInMonth(m);
+  let cnt = 0;
+  for (let d = 1; d <= days; d++) {
+    if (new Date(activeYear, m, d) <= TODAY) cnt++;
+  }
+  return cnt || 1;
+}
+
+function renderCalendar() {
+  const area = document.getElementById('calendar-area');
+  if (activeMonth === null) { area.innerHTML = ''; return; }
+  const m = activeMonth;
+  const weeks = getWeeksForMonth(m);
+  const days = daysInMonth(m);
+  let totalDone = 0;
+  const pDays = passedDays(m);
+  for (let d = 1; d <= days; d++) {
+    if (new Date(activeYear, m, d) <= TODAY) totalDone += getDayCompletion(m, d);
+  }
+  const possible = HABITS.length * pDays;
+  const pct = possible > 0 ? Math.round(totalDone / possible * 100) : 0;
+
+  let html = `<div class="calendar-panel">
+    <div class="cal-header">
+      <div class="cal-month-title">${MONTHS[m].toUpperCase()} ${activeYear}</div>
+      <div class="cal-stats">
+        <div class="cal-stat">DONE <span>${totalDone}</span></div>
+        <div class="cal-stat">GOAL <span>${HABITS.length * days}</span></div>
+        <div class="cal-stat">RATE <span>${pct}%</span></div>
+      </div>
+    </div>
+    <div class="cal-dow">
+      ${DOW.map(d=>`<div>${d}</div>`).join('')}
+    </div>
+    <div class="cal-weeks">`;
+
+  weeks.forEach((week, wi) => {
+    const isActive = activeWeek === wi;
+    html += `<div class="cal-week ${isActive ? 'active-week' : ''}" onclick="selectWeek(${wi})">
+      <div class="week-num">W${wi+1}</div>`;
+
+    week.forEach(d => {
+      if (!d) { html += `<div class="cal-day empty"><div class="day-num"></div></div>`; return; }
+      const date = new Date(activeYear, m, d);
+      const isToday  = date.toDateString() === TODAY.toDateString();
+      const isFuture = date > TODAY;
+      const done = isFuture ? 0 : getDayCompletion(m, d);
+      const dotCount  = Math.min(done, 12);
+      const missCount = isFuture ? 0 : HABITS.length - done;
+
+      let dots = '';
+      for (let i = 0; i < dotCount; i++) dots += `<div class="day-dot"></div>`;
+      for (let i = 0; i < Math.min(missCount, 12 - dotCount); i++) dots += `<div class="day-dot miss"></div>`;
+
+      html += `<div class="cal-day ${isToday?'today':''} ${isFuture?'future':''}">
+        <div class="day-num">${d}</div>
+        <div class="day-dots">${dots}</div>
+      </div>`;
+    });
+
+    html += `<span class="week-arrow">▶</span></div>`;
+    if (isActive) html += buildWeekDetail(m, wi, week);
+  });
+
+  html += `</div></div>`;
+  area.innerHTML = html;
+}
+
+function buildWeekDetail(m, wi, week) {
+  const validDays = week.filter(d => d !== null);
+  const dayLabels = validDays.map(d => {
+    const dow = DOW[new Date(activeYear, m, d).getDay()];
+    return `<th>${dow}<br><span style="color:var(--accent);font-size:10px">${d}</span></th>`;
+  });
+
+  let totalDone = 0, totalPossible = 0;
+
+  const habitRows = HABITS.map((h, hi) => {
+    let rowDone = 0;
+    const pastDaysInRow = validDays.filter(d => new Date(activeYear, m, d) <= TODAY).length;
+    const cells = validDays.map(d => {
+      const date = new Date(activeYear, m, d);
+      const isFuture  = date > TODAY;
+      const _wk = yearKey(m);
+      const isChecked = !isFuture && checks[_wk] && checks[_wk][hi] && checks[_wk][hi][d];
+      if (!isFuture) { totalPossible++; if (isChecked) { rowDone++; totalDone++; } }
+      return `<td>
+        <div class="cb ${isChecked?'checked':''} ${isFuture?'future':''}"
+          ${!isFuture ? `onclick="toggleCheck(${m},${hi},${d},this)"` : ''}>
+          ${isChecked ? '✓' : ''}
+        </div>
+      </td>`;
+    });
+    const rowPct = pastDaysInRow > 0 ? Math.round(rowDone / pastDaysInRow * 100) : 0;
+    return `<tr>
+      <td class="habit-n">${h.emoji} ${h.name}</td>
+      ${cells.join('')}
+      <td class="pct-cell">${rowPct}%</td>
+    </tr>`;
+  }).join('');
+
+  const weekPct = totalPossible > 0 ? Math.round(totalDone / totalPossible * 100) : 0;
+
+  return `<div class="week-detail">
+    <div class="week-detail-header">
+      <div class="week-detail-title">WEEK ${wi + 1} — ${MONTHS[m]}</div>
+      <div class="week-completion">Completion: <span>${weekPct}%</span> (${totalDone}/${totalPossible})</div>
+    </div>
+    <div class="habit-week-grid">
+      <table class="habit-week-table">
+        <thead class="hwt-head">
+          <tr>
+            <th class="habit-h">HABIT</th>
+            ${dayLabels.join('')}
+            <th>%</th>
+          </tr>
+        </thead>
+        <tbody class="hwt-body">${habitRows}</tbody>
+      </table>
+    </div>
+  </div>`;
+}
+
+function selectWeek(wi) {
+  activeWeek = (activeWeek === wi) ? null : wi;
+  renderCalendar();
+}
+
+function toggleCheck(m, hi, d, el) {
+  const k = yearKey(m);
+  if (!checks[k][hi]) checks[k][hi] = {};
+  checks[k][hi][d] = !checks[k][hi][d];
+  scheduleSave();
+  renderAll();
+}
+
+// ── STATS STRIP ──
+function renderStats() {
+  const strip = document.getElementById('stats-strip');
+  if (activeMonth === null) { strip.style.display = 'none'; return; }
+  strip.style.display = 'grid';
+  const m = activeMonth;
+  const days = daysInMonth(m);
+  let done = 0;
+  for (let d = 1; d <= days; d++) {
+    if (new Date(activeYear, m, d) <= TODAY) done += getDayCompletion(m, d);
+  }
+
+  // TODAY's remaining habits
+  const todayDone = getDayCompletion(m, TODAY.getMonth() === m ? TODAY.getDate() : -1);
+  const todayLeft = (m === TODAY.getMonth() && activeYear === TODAY.getFullYear()) ? HABITS.length - todayDone : 0;
+
+  const streak = calcGlobalStreak();
+
+  strip.innerHTML = `
+    <div class="scard"><div class="scard-label">MONTH DONE</div><div class="scard-val g">${done}</div></div>
+    <div class="scard"><div class="scard-label">TODAY LEFT</div><div class="scard-val r">${(m === TODAY.getMonth() && activeYear === TODAY.getFullYear()) ? todayLeft : '—'}</div></div>
+    <div class="scard"><div class="scard-label">MONTH GOAL</div><div class="scard-val a">${HABITS.length * days}</div></div>
+    <div class="scard"><div class="scard-label">STREAK</div><div class="scard-val a">${streak}🔥</div></div>
+  `;
+}
+
+// Cross-month streak: counts back from today across all months
+function calcGlobalStreak() {
+  let streak = 0;
+  let cur = new Date(TODAY);
+  for (let i = 0; i < 365 * 10; i++) {
+    const m = cur.getMonth();
+    const d = cur.getDate();
+    const y = cur.getFullYear();
+    const k = y + '-' + m;
+    if (!checks[k]) break;
+    const savedActive = activeYear;
+    activeYear = y;
+    const done = getDayCompletion(m, d);
+    activeYear = savedActive;
+    if (done >= Math.ceil(HABITS.length * 0.5)) {
+      streak++;
+    } else {
+      break;
+    }
+    cur.setDate(cur.getDate() - 1);
+  }
+  return streak;
+}
+
+// ── ANALYSIS ──
+function renderAnalysis() {
+  const area = document.getElementById('analysis-area');
+  if (activeMonth === null) { area.innerHTML = ''; return; }
+  const m = activeMonth;
+  const days = daysInMonth(m);
+
+  const ranked = HABITS.map((h, hi) => {
+    let done = 0, possible = 0;
+    for (let d = 1; d <= days; d++) {
+      if (new Date(activeYear, m, d) <= TODAY) {
+        possible++;
+        const _k = yearKey(m);
+        if (checks[_k] && checks[_k][hi] && checks[_k][hi][d]) done++;
+      }
+    }
+    const pct = possible > 0 ? Math.round(done / possible * 100) : 0;
+    return { name: h.name, emoji: h.emoji, done, possible, pct };
+  }).sort((a, b) => b.pct - a.pct);
+
+  area.innerHTML = `<div class="analysis-section">
+    <div class="section-title">Analysis — ${MONTHS[m]} ${activeYear}</div>
+    ${ranked.map(r => `
+      <div class="analysis-row">
+        <div class="ar-name">${r.emoji} ${r.name}</div>
+        <div class="ar-pct-num">${r.done}</div>
+        <div class="ar-bar"><div class="ar-fill" style="width:${r.pct}%"></div></div>
+        <div class="ar-pct">${r.pct}%</div>
+      </div>`).join('')}
+  </div>`;
+}
+
+// ── RENDER ALL ──
+function renderAll() {
+  renderMonths();
+  renderCalendar();
+  renderStats();
+  renderAnalysis();
+}
+
+// ── INIT ──
+// Auto-open current month
+activeMonth = TODAY.getMonth();
+seedMonth(activeMonth);
+// Auto-open current week
+(function() {
+  const weeks = getWeeksForMonth(activeMonth);
+  for (let wi = 0; wi < weeks.length; wi++) {
+    if (weeks[wi].includes(TODAY.getDate())) { activeWeek = wi; break; }
+  }
+})();
+
+renderHabitsManager();
+renderAll();
+</script>
+</body>
+</html>
