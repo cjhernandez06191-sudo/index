@@ -374,6 +374,137 @@ body.compact .chart-section,
 body.compact .panels-row,
 body.compact .habit-streaks-section,
 body.compact #analysis-area { display: none !important; }
+
+/* ── MOBILE STYLES ── */
+@media (max-width: 600px) {
+  body { padding: 12px 10px 100px; }
+
+  .app-title { font-size: 28px; letter-spacing: 3px; }
+
+  .header-right { gap: 6px; }
+  .theme-dot { width: 14px; height: 14px; }
+  .compact-btn { font-size: 9px; padding: 4px 6px; }
+  .year-nav-btn { padding: 5px 6px; font-size: 12px; }
+  .year-badge { font-size: 11px; padding: 5px 7px; min-width: 36px; }
+
+  /* Habits manager full width */
+  .habits-manager { padding: 12px; }
+  .habit-item { padding: 10px 8px; gap: 6px; }
+  .habit-item-name { font-size: 13px; }
+  .add-habit-row { flex-wrap: wrap; }
+  .add-habit-input { min-width: 0; }
+
+  /* Month pills — scrollable row */
+  .months-row {
+    display: flex; flex-wrap: nowrap;
+    overflow-x: auto; gap: 6px;
+    padding-bottom: 6px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .months-row::-webkit-scrollbar { display: none; }
+  .month-pill { flex-shrink: 0; padding: 8px 12px; font-size: 10px; }
+
+  /* Calendar full width, bigger touch targets */
+  .cal-header { padding: 12px 14px; gap: 6px; }
+  .cal-month-title { font-size: 20px; letter-spacing: 2px; }
+  .cal-stats { gap: 10px; font-size: 10px; flex-wrap: wrap; }
+  .cal-dow div { font-size: 9px; padding: 8px 0; }
+  .cal-week { grid-template-columns: 28px repeat(7, 1fr); }
+  .week-num { font-size: 8px; }
+  .cal-day { min-height: 44px; padding: 5px 2px; }
+  .day-num { font-size: 11px; width: 22px; height: 22px; }
+  .day-dot { width: 3px; height: 3px; }
+  .day-dots { max-width: 28px; gap: 1px; }
+
+  /* Heatmap smaller */
+  .heatmap-cell { width: 16px; height: 16px; font-size: 7px; }
+  .heatmap-row { gap: 2px; padding: 8px 12px; }
+
+  /* Week detail table scrollable */
+  .habit-week-grid { padding: 0 10px 12px; }
+  .habit-week-table { min-width: 320px; }
+  .hwt-head th { font-size: 8px; padding: 4px; }
+  .hwt-body td { padding: 6px 4px; font-size: 11px; }
+  .hwt-body td.habit-n { font-size: 11px; }
+  .cb { width: 34px; height: 34px; font-size: 16px; border-radius: 8px; }
+
+  /* Stats strip 2x2 on mobile */
+  .stats-strip { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+  .scard { padding: 12px 10px; }
+  .scard-val { font-size: 26px; }
+  .scard-label { font-size: 8px; }
+
+  /* Panels row single column */
+  .panels-row { grid-template-columns: 1fr !important; }
+
+  /* Chart smaller */
+  .chart-bars { height: 60px; }
+  .chart-bar-wrap { width: 14px; }
+
+  /* Analysis */
+  .analysis-row { grid-template-columns: 120px 24px 1fr 34px; gap: 6px; }
+  .ar-name { font-size: 11px; }
+
+  /* Modal full screen on mobile */
+  .modal { max-width: 100%; border-radius: 16px 16px 0 0; }
+  .modal-overlay { align-items: flex-end; padding: 0; }
+
+  /* Reminder rows */
+  .reminder-row { flex-wrap: wrap; gap: 6px; }
+  .reminder-time { width: 90px; }
+
+  /* Bottom floating month nav */
+  .bottom-month-bar {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    background: var(--surface);
+    border-top: 1px solid var(--border2);
+    padding: 10px 12px 16px;
+    display: flex; gap: 6px; overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none; z-index: 200;
+  }
+  .bottom-month-bar::-webkit-scrollbar { display: none; }
+  /* Hide the top months row on mobile, use bottom bar instead */
+  .months-row { display: none !important; }
+
+  /* Undo bar higher on mobile */
+  #undo-bar { bottom: 80px; font-size: 10px; }
+
+  /* Toast position */
+  #toast-container { top: auto; bottom: 90px; right: 12px; left: 12px; }
+  .toast { max-width: 100%; font-size: 11px; }
+
+  /* Week detail title smaller */
+  .week-detail-title { font-size: 15px; }
+  .week-completion { font-size: 10px; }
+
+  /* Section titles */
+  .section-title { font-size: 17px; letter-spacing: 2px; }
+}
+
+/* Bottom month bar pill style */
+.bottom-month-pill {
+  flex-shrink: 0;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px; letter-spacing: 1px;
+  padding: 8px 14px; border-radius: 20px;
+  border: 1px solid var(--border2);
+  background: var(--surface2);
+  color: var(--muted); cursor: pointer;
+  transition: all 0.2s; user-select: none;
+  position: relative;
+  -webkit-tap-highlight-color: transparent;
+}
+.bottom-month-pill.active {
+  background: var(--accent); color: #0c0c0c;
+  border-color: var(--accent); font-weight: 600;
+}
+.bottom-month-pill.has-data::after {
+  content: ''; position: absolute; bottom: 4px; right: 4px;
+  width: 4px; height: 4px; border-radius: 50%; background: var(--accent2);
+}
+.bottom-month-pill.active.has-data::after { background: #0c0c0c; }
 </style>
 </head>
 <body>
@@ -430,12 +561,13 @@ body.compact #analysis-area { display: none !important; }
 <div class="habits-manager">
   <div class="habits-manager-header" onclick="toggleHabitsManager()">
     <div class="habits-manager-title">▸ HABITS MANAGER</div>
-    <div class="habits-manager-toggle open" id="hm-toggle">▶</div>
+    <div class="habits-manager-toggle" id="hm-toggle">▶</div>
   </div>
-  <div class="habits-list open" id="habits-list"></div>
+  <div class="habits-list" id="habits-list"></div>
 </div>
 
 <div class="months-row" id="months-row"></div>
+<div class="bottom-month-bar" id="bottom-month-bar" style="display:none"></div>
 <div id="calendar-area"></div>
 
 <div class="stats-strip" id="stats-strip" style="display:none"></div>
@@ -656,7 +788,7 @@ function seedHabitForAllMonths(hi) {
 let activeYear  = TODAY.getFullYear();
 let activeMonth = null;
 let activeWeek  = null;
-let habitsOpen  = true;
+let habitsOpen  = false;
 let _modalDay = null; // {m, d}
 let _colorPickerOpen = null;
 
@@ -801,13 +933,29 @@ function deleteHabit(hi) {
 // ── MONTHS ROW ──
 function renderMonths() {
   const row=document.getElementById('months-row'); row.innerHTML='';
+  const bar=document.getElementById('bottom-month-bar'); bar.innerHTML='';
+  const isMobile = window.innerWidth <= 600;
+  if (isMobile) { bar.style.display='flex'; } else { bar.style.display='none'; }
   MONTHS.forEach((name,mi)=>{
     const hasData=!!checks[yearKey(mi)];
+    // top row pill
     const pill=document.createElement('div');
     pill.className='month-pill'+(mi===activeMonth?' active':'')+(hasData?' has-data':'');
     pill.textContent=name; pill.onclick=()=>selectMonth(mi);
     row.appendChild(pill);
+    // bottom bar pill (mobile)
+    const bpill=document.createElement('div');
+    bpill.className='bottom-month-pill'+(mi===activeMonth?' active':'')+(hasData?' has-data':'');
+    bpill.textContent=name; bpill.onclick=()=>selectMonth(mi);
+    bar.appendChild(bpill);
   });
+  // scroll active month into view on mobile
+  if(isMobile && activeMonth!==null){
+    setTimeout(()=>{
+      const active=bar.querySelector('.active');
+      if(active) active.scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'});
+    },50);
+  }
 }
 function selectMonth(mi) {
   if (activeMonth===mi) { activeMonth=null; activeWeek=null; }
